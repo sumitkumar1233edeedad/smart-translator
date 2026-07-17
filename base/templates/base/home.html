@@ -1,0 +1,83 @@
+{% extends 'main.html' %}
+{% load static %}
+{% block content %}
+ 
+<body>
+    <div class="container">
+        <h1>🌍 Language Translation Tool</h1>
+        <p class="subtitle">CodeAlpha AI Internship — Task 1</p>
+
+        {% if error %}
+            <div class="alert error">{{ error }}</div>
+        {% endif %}
+
+        <form method="post">
+            {% csrf_token %}
+            <div class="lang-row">
+                <div class="field">
+                    <label for="{{ form.source_lang.id_for_label }}">{{ form.source_lang.label }}</label>
+                    {{ form.source_lang }}
+                </div>
+                <button type="button" id="swap-btn" title="Swap languages">⇄</button>
+                <div class="field">
+                    <label for="{{ form.target_lang.id_for_label }}">{{ form.target_lang.label }}</label>
+                    {{ form.target_lang }}
+                </div>
+            </div>
+
+            <div class="field">
+                <label for="{{ form.text.id_for_label }}">{{ form.text.label }}</label>
+                {{ form.text }}
+            </div>
+
+            <button type="submit" class="translate-btn">Translate</button>
+        </form>
+
+        {% if translated_text %}
+            <div class="result">
+                <label>Translated text</label>
+                <textarea id="output" readonly rows="6">{{ translated_text }}</textarea>
+                <div class="result-actions">
+                    <button type="button" id="copy-btn">📋 Copy</button>
+                    <button type="button" id="speak-btn">🔊 Listen</button>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    <script>
+        // Copy translated text to clipboard
+        const copyBtn = document.getElementById("copy-btn");
+        if (copyBtn) {
+            copyBtn.addEventListener("click", () => {
+                const text = document.getElementById("output").value;
+                navigator.clipboard.writeText(text).then(() => {
+                    copyBtn.textContent = "✅ Copied!";
+                    setTimeout(() => (copyBtn.textContent = "📋 Copy"), 1500);
+                });
+            });
+        }
+
+        // Text-to-speech using the browser's built-in Web Speech API (no server cost)
+        const speakBtn = document.getElementById("speak-btn");
+        if (speakBtn) {
+            speakBtn.addEventListener("click", () => {
+                const text = document.getElementById("output").value;
+                const utterance = new SpeechSynthesisUtterance(text);
+                speechSynthesis.speak(utterance);
+            });
+        }
+
+        // Swap source/target language selects
+        const swapBtn = document.getElementById("swap-btn");
+        swapBtn.addEventListener("click", () => {
+            const source = document.getElementById("{{ form.source_lang.id_for_label }}");
+            const target = document.getElementById("{{ form.target_lang.id_for_label }}");
+            if (source.value === "auto") return; // can't swap when auto-detect is selected
+            const temp = source.value;
+            source.value = target.value;
+            target.value = temp;
+        });
+    </script>
+</body>
+{% endblock %}
