@@ -1,2 +1,4 @@
 Django
 deep-translator
+gunicorn
+whitenoise
